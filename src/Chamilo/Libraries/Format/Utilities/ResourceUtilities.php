@@ -5,6 +5,7 @@ use Chamilo\Configuration\Service\ConfigurationConsulter;
 use Chamilo\Configuration\Service\FileConfigurationLoader;
 use Chamilo\Configuration\Service\FileConfigurationLocator;
 use Chamilo\Libraries\Architecture\ClassnameUtilities;
+use Chamilo\Libraries\DependencyInjection\DependencyInjectionContainerBuilder;
 use Chamilo\Libraries\File\ConfigurablePathBuilder;
 use Chamilo\Libraries\File\PathBuilder;
 use Chamilo\Libraries\Format\Theme;
@@ -212,8 +213,11 @@ abstract class ResourceUtilities
                 $classnameUtilities = new ClassnameUtilities($stringUtilities);
                 $pathBuilder = new PathBuilder($classnameUtilities);
 
-                $fileConfigurationConsulter = new ConfigurationConsulter(
-                    new FileConfigurationLoader(new FileConfigurationLocator($pathBuilder)));
+                $container = DependencyInjectionContainerBuilder::getInstance()->createContainer();
+                $fileConfigurationConsulter = $container->get('chamilo.configuration.service.file_configuration_consulter');
+
+                /*$fileConfigurationConsulter = new ConfigurationConsulter(
+                    new FileConfigurationLoader(new FileConfigurationLocator($pathBuilder)));*/
 
                 $configurablePathBuilder = new ConfigurablePathBuilder(
                     $fileConfigurationConsulter->getSetting(array('Chamilo\Configuration', 'storage')));

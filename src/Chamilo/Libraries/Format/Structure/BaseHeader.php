@@ -10,6 +10,7 @@ use Chamilo\Libraries\Architecture\Application\Application;
 use Chamilo\Libraries\Architecture\ClassnameUtilities;
 use Chamilo\Libraries\Cache\Assetic\JavascriptCacheService;
 use Chamilo\Libraries\Cache\Assetic\StylesheetCacheService;
+use Chamilo\Libraries\DependencyInjection\DependencyInjectionContainerBuilder;
 use Chamilo\Libraries\File\ConfigurablePathBuilder;
 use Chamilo\Libraries\File\Path;
 use Chamilo\Libraries\File\PathBuilder;
@@ -225,8 +226,11 @@ class BaseHeader implements HeaderInterface
         $pathBuilder = new PathBuilder(ClassnameUtilities::getInstance());
         $fileConfigurationLocator = new FileConfigurationLocator($pathBuilder);
 
-        $fileConfigurationConsulter =
-            new ConfigurationConsulter(new FileConfigurationLoader($fileConfigurationLocator));
+        /*$fileConfigurationConsulter =
+            new ConfigurationConsulter(new FileConfigurationLoader($fileConfigurationLocator));*/
+
+        $container = DependencyInjectionContainerBuilder::getInstance()->createContainer();
+        $fileConfigurationConsulter = $container->get('chamilo.configuration.service.file_configuration_consulter');
 
         $configurablePathBuilder = new ConfigurablePathBuilder(
             $fileConfigurationConsulter->getSetting(array('Chamilo\Configuration', 'storage'))

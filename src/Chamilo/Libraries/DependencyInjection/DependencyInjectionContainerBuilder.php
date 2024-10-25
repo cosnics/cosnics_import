@@ -147,12 +147,29 @@ class DependencyInjectionContainerBuilder
 
         if (is_null($cacheFile))
         {
-            $cacheFile = $this->getConfigurablePathBuilder()->getCachePath(__NAMESPACE__) . '/DependencyInjection.php';
+            $cacheFile = $this->determineCacheFile();
         }
 
         $this->cacheFile = $cacheFile;
         $this->cacheClass = $cacheClass;
         $this->containerExtensionFinder = $containerExtensionFinder;
+    }
+
+    protected function determineCacheFile(): string
+    {
+        $basePath = realpath(__DIR__ . '/../../../../');
+        $possiblePaths = ['files', 'storage'];
+
+        foreach($possiblePaths as $possiblePath) {
+            $path = $basePath . '/' . $possiblePath . '/cache/' . md5(__NAMESPACE__) . '/DependencyInjection.php';
+
+            if (file_exists($path))
+            {
+                return $path;
+            }
+        }
+
+        return $this->getConfigurablePathBuilder()->getCachePath(__NAMESPACE__) . '/DependencyInjection.php';
     }
 
     /**

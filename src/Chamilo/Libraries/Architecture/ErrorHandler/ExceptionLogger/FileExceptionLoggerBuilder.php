@@ -22,7 +22,7 @@ class FileExceptionLoggerBuilder implements ExceptionLoggerBuilderInterface
      *
      * @see \Chamilo\Libraries\Architecture\ErrorHandler\ExceptionLogger\ExceptionLoggerBuilderInterface::__construct()
      */
-    public function __construct(ConfigurationConsulter $configurationConsulter)
+    public function __construct(protected ConfigurationConsulter $configurationConsulter)
     {
     }
 
@@ -31,14 +31,10 @@ class FileExceptionLoggerBuilder implements ExceptionLoggerBuilderInterface
      *
      * @return \Chamilo\Libraries\Architecture\ErrorHandler\ExceptionLogger\FileExceptionLogger
      */
-    public function createExceptionLogger()
+    public function createExceptionLogger(): FileExceptionLogger
     {
-        $fileConfigurationConsulter = new ConfigurationConsulter(
-            new FileConfigurationLoader(
-                new FileConfigurationLocator(new PathBuilder(new ClassnameUtilities(new StringUtilities())))));
-
         $configurablePathBuilder = new ConfigurablePathBuilder(
-            $fileConfigurationConsulter->getSetting(array('Chamilo\Configuration', 'storage')));
+            $this->configurationConsulter->getSetting(array('Chamilo\Configuration', 'storage')));
 
         return new FileExceptionLogger($configurablePathBuilder->getLogPath());
     }

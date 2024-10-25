@@ -2,6 +2,7 @@
 namespace Chamilo\Libraries\Cache\Doctrine;
 
 use Chamilo\Libraries\Cache\IdentifiableCacheService;
+use Chamilo\Libraries\DependencyInjection\DependencyInjectionContainerBuilder;
 use Chamilo\Libraries\File\ConfigurablePathBuilder;
 use Chamilo\Configuration\Service\ConfigurationConsulter;
 use Chamilo\Configuration\Service\FileConfigurationLoader;
@@ -38,9 +39,10 @@ abstract class DoctrineCacheService extends IdentifiableCacheService
      */
     protected function getCachePath()
     {
-        $configurationConsulter = new ConfigurationConsulter(
-            new FileConfigurationLoader(
-                new FileConfigurationLocator(new PathBuilder(new ClassnameUtilities(new StringUtilities())))));
+        DependencyInjectionContainerBuilder::getInstance()->createContainer();
+        $container = DependencyInjectionContainerBuilder::getInstance()->createContainer();
+        $configurationConsulter = $container->get('chamilo.configuration.service.file_configuration_consulter');
+
         $configurablePathBuilder = new ConfigurablePathBuilder(
             $configurationConsulter->getSetting(array('Chamilo\Configuration', 'storage')));
 

@@ -4,6 +4,7 @@ namespace Chamilo\Libraries\Storage\DataManager;
 use Chamilo\Configuration\Service\ConfigurationConsulter;
 use Chamilo\Configuration\Service\FileConfigurationLoader;
 use Chamilo\Configuration\Service\FileConfigurationLocator;
+use Chamilo\Libraries\DependencyInjection\DependencyInjectionContainerBuilder;
 use Chamilo\Libraries\File\PathBuilder;
 use Chamilo\Libraries\Architecture\ClassnameUtilities;
 use Chamilo\Libraries\Utilities\StringUtilities;
@@ -237,9 +238,15 @@ abstract class DataSourceName
      */
     public static function get_from_config($type)
     {
-        $fileConfigurationConsulter = new ConfigurationConsulter(
+        $container = DependencyInjectionContainerBuilder::getInstance()->createContainer();
+        $fileConfigurationConsulter = $container->get('chamilo.configuration.service.file_configuration_consulter');
+
+        /*$fileConfigurationConsulter = new ConfigurationConsulter(
+            new FileConfigurationLoader(new FileConfigurationLocator($pathBuilder)));*/
+
+        /*$fileConfigurationConsulter = new ConfigurationConsulter(
             new FileConfigurationLoader(
-                new FileConfigurationLocator(new PathBuilder(new ClassnameUtilities(new StringUtilities())))));
+                new FileConfigurationLocator(new PathBuilder(new ClassnameUtilities(new StringUtilities())))));*/
 
         return self::factory(
             $type,
