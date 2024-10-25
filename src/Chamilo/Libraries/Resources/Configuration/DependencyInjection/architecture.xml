@@ -37,8 +37,7 @@
                  alias="Chamilo\Libraries\Architecture\ErrorHandler\ExceptionLogger"/>
 
         <service id="Chamilo\Libraries\Architecture\ErrorHandler\ExceptionLogger\ExceptionLoggerFactory">
-            <argument type="service"
-                      id="Chamilo\Configuration\Service\Consulter\FileConfigurationConsulter"/>
+            <argument key="$errorHandlingConfiguration">%chamilo.configuration.error_handling%</argument>
         </service>
 
         <service id="Chamilo\Libraries\Architecture\Test\PHPUnitGenerator\PHPUnitGenerator"/>

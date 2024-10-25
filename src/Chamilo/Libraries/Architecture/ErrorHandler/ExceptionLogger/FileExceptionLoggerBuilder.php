@@ -1,9 +1,7 @@
 <?php
 namespace Chamilo\Libraries\Architecture\ErrorHandler\ExceptionLogger;
 
-use Chamilo\Configuration\Service\Consulter\ConfigurationConsulter;
 use Chamilo\Libraries\Architecture\Application\Routing\UrlGenerator;
-use Chamilo\Libraries\File\ConfigurablePathBuilder;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 
 /**
@@ -14,19 +12,19 @@ use Symfony\Component\HttpFoundation\Session\SessionInterface;
  */
 class FileExceptionLoggerBuilder implements ExceptionLoggerBuilderInterface
 {
-    protected ConfigurationConsulter $configurationConsulter;
+    protected array $errorHandlingConfiguration;
 
     protected SessionInterface $session;
 
     protected UrlGenerator $urlGenerator;
 
     public function __construct(
-        ConfigurationConsulter $configurationConsulter, SessionInterface $session, UrlGenerator $urlGenerator
+        SessionInterface $session, UrlGenerator $urlGenerator, array $errorHandlingConfiguration = []
     )
     {
-        $this->configurationConsulter = $configurationConsulter;
         $this->session = $session;
         $this->urlGenerator = $urlGenerator;
+        $this->errorHandlingConfiguration = $errorHandlingConfiguration;
     }
 
     /**
@@ -34,17 +32,14 @@ class FileExceptionLoggerBuilder implements ExceptionLoggerBuilderInterface
      */
     public function createExceptionLogger(): FileExceptionLogger
     {
+        $errorHandlingConfiguration = $this->getErrorHandlingConfiguration();
 
-        $configurablePathBuilder = new ConfigurablePathBuilder(
-            $this->getConfigurationConsulter()->getSetting(['Chamilo\Configuration', 'storage'])
-        );
-
-        return new FileExceptionLogger($configurablePathBuilder->getLogPath());
+        return new FileExceptionLogger($errorHandlingConfiguration['logs_path']);
     }
 
-    public function getConfigurationConsulter(): ConfigurationConsulter
+    public function getErrorHandlingConfiguration(): array
     {
-        return $this->configurationConsulter;
+        return $this->errorHandlingConfiguration;
     }
 
     public function getSession(): SessionInterface
@@ -56,13 +51,4 @@ class FileExceptionLoggerBuilder implements ExceptionLoggerBuilderInterface
     {
         return $this->urlGenerator;
     }
-
-    public function setConfigurationConsulter(ConfigurationConsulter $configurationConsulter
-    ): FileExceptionLoggerBuilder
-    {
-        $this->configurationConsulter = $configurationConsulter;
-
-        return $this;
-    }
-
 }

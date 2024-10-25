@@ -37,6 +37,8 @@ class Diagnoser
 
     protected SimpleTableRenderer $diagnoserTableRenderer;
 
+    protected int $installationDate;
+
     protected ChamiloRequest $request;
 
     protected SystemPathBuilder $systemPathBuilder;
@@ -48,7 +50,8 @@ class Diagnoser
     public function __construct(
         ConfigurationConsulter $configurationConsulter, Connection $connection, ChamiloRequest $request,
         SystemPathBuilder $systemPathBuilder, ConfigurablePathBuilder $configurablePathBuilder, Translator $translator,
-        DatetimeUtilities $datetimeUtilities, TabsRenderer $tabsRenderer, SimpleTableRenderer $diagnoserTableRenderer
+        DatetimeUtilities $datetimeUtilities, TabsRenderer $tabsRenderer, SimpleTableRenderer $diagnoserTableRenderer,
+        int $installationDate
     )
     {
         $this->configurationConsulter = $configurationConsulter;
@@ -60,6 +63,7 @@ class Diagnoser
         $this->datetimeUtilities = $datetimeUtilities;
         $this->tabsRenderer = $tabsRenderer;
         $this->diagnoserTableRenderer = $diagnoserTableRenderer;
+        $this->installationDate = $installationDate;
     }
 
     /**
@@ -191,7 +195,7 @@ class Diagnoser
             'http://be2.php.net/file_exists', $writable, 0, 'yes_no', $this->getTranslation('DirectoryShouldBeRemoved')
         );
 
-        $date = $this->configurationConsulter->getSetting(['Chamilo\Configuration', 'general', 'install_date']);
+        $date = $this->getInstallationDate();
         $date = $this->datetimeUtilities->formatLocaleDate(
             $this->getTranslation('DateFormatShort') . ', ' . $this->getTranslation('TimeNoSecFormat'), (int) $date
         );
@@ -236,6 +240,11 @@ class Diagnoser
     public function getDiagnoserTableRenderer(): SimpleTableRenderer
     {
         return $this->diagnoserTableRenderer;
+    }
+
+    public function getInstallationDate(): int
+    {
+        return $this->installationDate;
     }
 
     public function getLink(string $title, string $url): string

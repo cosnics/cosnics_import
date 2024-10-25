@@ -7,7 +7,9 @@
                   autoconfigure="true"
                   public="true"/>
 
-        <service id="Chamilo\Libraries\Support\Diagnoser"/>
+        <service id="Chamilo\Libraries\Support\Diagnoser">
+            <argument key="$installationDate">%chamilo.configuration.general.install_date%</argument>
+        </service>
         <service id="Chamilo\Libraries\Support\DiagnoserCellRenderer"/>
         <service id="Chamilo\Libraries\Support"/>
 

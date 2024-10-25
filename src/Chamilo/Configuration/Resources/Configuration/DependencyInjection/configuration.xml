@@ -8,30 +8,7 @@
                   public="true"/>
         <service id="Chamilo\Configuration\Service\Consulter\ConfigurationConsulter">
             <argument type="service"
-                      id="Chamilo\Configuration\Service\DataLoader\ConfigurationCachePreLoader"/>
-        </service>
-
-        <service id="Chamilo\Configuration\Service\DataLoader\ConfigurationCachePreLoader"
-                 class="Chamilo\Configuration\Service\DataLoader\AggregatedCacheDataPreLoader">
-            <tag name="Chamilo\Libraries\Cache\CacheDataPreLoaderService"/>
-            <argument key="$cacheAdapter"
-                      type="service"
-                      id="Chamilo\Configuration\Service\ConfigurationCacheAdapter"/>
-            <argument key="$dataPreLoaders"
-                      type="collection">
-                <argument type="service"
-                          id="Chamilo\Configuration\Service\DataLoader\FileConfigurationCacheDataPreLoader"></argument>
-                <argument type="service"
-                          id="Chamilo\Configuration\Service\DataLoader\StorageConfigurationCacheDataPreLoader"></argument>
-            </argument>
-        </service>
-
-        <service id="Chamilo\Configuration\Service\ConfigurationCacheAdapter"
-                 class="Symfony\Component\Cache\Adapter\PhpFilesAdapter">
-            <tag name="Symfony\Component\Cache\Adapter"/>
-            <factory service="Chamilo\Libraries\Cache\SymfonyCacheAdapterFactory"
-                     method="createPhpFilesAdapter"/>
-            <argument key="$namespace">Chamilo\Configuration\Service\Configuration</argument>
+                      id="Chamilo\Configuration\Service\DataLoader\StorageConfigurationCacheDataPreLoader"/>
         </service>
 
         <service id="Chamilo\Configuration\Service\DataLoader\StorageConfigurationCacheDataPreLoader">
@@ -50,9 +27,6 @@
         </service>
 
         <service id="Chamilo\Configuration\Service\ConfigurationService">
-            <argument key="$configurationCacheAdapter"
-                      type="service"
-                      id="Chamilo\Configuration\Service\ConfigurationCacheAdapter"/>
             <argument key="$storageConfigurationCacheAdapter"
                       type="service"
                       id="Chamilo\Configuration\Service\DataLoader\StorageConfigurationCacheAdapter"/>

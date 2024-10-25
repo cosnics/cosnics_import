@@ -1,7 +1,6 @@
 <?php
 namespace Chamilo\Libraries\Architecture\ErrorHandler\ExceptionLogger;
 
-use Chamilo\Configuration\Service\Consulter\ConfigurationConsulter;
 use Chamilo\Libraries\Architecture\Application\Routing\UrlGenerator;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 
@@ -14,9 +13,7 @@ use Symfony\Component\HttpFoundation\Session\SessionInterface;
 interface ExceptionLoggerBuilderInterface
 {
 
-    public function __construct(
-        ConfigurationConsulter $configurationConsulter, SessionInterface $session, UrlGenerator $urlGenerator
-    );
+    public function __construct(SessionInterface $session, UrlGenerator $urlGenerator, array $configuration = []);
 
     public function createExceptionLogger(): ExceptionLoggerInterface;
 }

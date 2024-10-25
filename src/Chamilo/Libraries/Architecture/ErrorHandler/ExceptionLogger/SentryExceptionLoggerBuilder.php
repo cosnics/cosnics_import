@@ -1,7 +1,6 @@
 <?php
 namespace Chamilo\Libraries\Architecture\ErrorHandler\ExceptionLogger;
 
-use Chamilo\Configuration\Service\Consulter\ConfigurationConsulter;
 use Chamilo\Libraries\Architecture\Application\Routing\UrlGenerator;
 use Exception;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
@@ -15,17 +14,17 @@ use Symfony\Component\HttpFoundation\Session\SessionInterface;
 class SentryExceptionLoggerBuilder implements ExceptionLoggerBuilderInterface
 {
 
-    protected ConfigurationConsulter $configurationConsulter;
+    protected array $errorHandlingConfiguration;
 
     protected SessionInterface $session;
 
     protected UrlGenerator $urlGenerator;
 
     public function __construct(
-        ConfigurationConsulter $configurationConsulter, SessionInterface $session, UrlGenerator $urlGenerator
+        SessionInterface $session, UrlGenerator $urlGenerator, array $errorHandlingConfiguration = []
     )
     {
-        $this->configurationConsulter = $configurationConsulter;
+        $this->errorHandlingConfiguration = $errorHandlingConfiguration;
         $this->session = $session;
         $this->urlGenerator = $urlGenerator;
     }
@@ -35,25 +34,25 @@ class SentryExceptionLoggerBuilder implements ExceptionLoggerBuilderInterface
      */
     public function createExceptionLogger(): SentryExceptionLogger
     {
-        $clientDSNKey = $this->getConfigurationConsulter()->getSetting(
-            ['Chamilo\Configuration', 'error_handling', 'sentry_error_logger', 'DSN']
-        );
+        $errorHandlingConfiguration = $this->getErrorHandlingConfiguration();
+
+        $clientDSNKey = $errorHandlingConfiguration['DSN'];
 
         if (empty($clientDSNKey))
         {
             throw new Exception(
                 'The DSN key should be configured when using the sentry exception logger. ' .
                 'The configuration should be put in ' .
-                'chamilo.configuration.error_handling["sentry_error_logger"]["DSN"]'
+                'chamilo.configuration.error_handling["configuration"]["Chamilo\Libraries\Architecture\ErrorHandler\ExceptionLogger\SentryExceptionLoggerBuilder"]["DSN"]'
             );
         }
 
         return new SentryExceptionLogger($this->getSession(), $this->getUrlGenerator(), $clientDSNKey);
     }
 
-    public function getConfigurationConsulter(): ConfigurationConsulter
+    public function getErrorHandlingConfiguration(): array
     {
-        return $this->configurationConsulter;
+        return $this->errorHandlingConfiguration;
     }
 
     public function getSession(): SessionInterface

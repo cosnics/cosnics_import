@@ -1,7 +1,6 @@
 <?php
 namespace Chamilo\Configuration\Service;
 
-use Chamilo\Configuration\Service\DataLoader\AggregatedCacheDataPreLoader;
 use Chamilo\Configuration\Service\DataLoader\StorageConfigurationCacheDataPreLoader;
 use Chamilo\Configuration\Storage\DataClass\Setting;
 use Chamilo\Configuration\Storage\Repository\ConfigurationRepository;
@@ -19,8 +18,6 @@ class ConfigurationService
 {
     use CacheAdapterHandlerTrait;
 
-    protected AdapterInterface $configurationCacheAdapter;
-
     protected AdapterInterface $storageConfigurationCacheAdapter;
 
     protected UserService $userService;
@@ -30,13 +27,11 @@ class ConfigurationService
     private ConfigurationRepository $configurationRepository;
 
     public function __construct(
-        ConfigurationRepository $configurationRepository, AdapterInterface $configurationCacheAdapter,
-        AdapterInterface $storageConfigurationCacheAdapter, FilesystemAdapter $userSettingsCacheAdapter,
-        UserService $userService
+        ConfigurationRepository $configurationRepository, AdapterInterface $storageConfigurationCacheAdapter,
+        FilesystemAdapter $userSettingsCacheAdapter, UserService $userService
     )
     {
         $this->configurationRepository = $configurationRepository;
-        $this->configurationCacheAdapter = $configurationCacheAdapter;
         $this->storageConfigurationCacheAdapter = $storageConfigurationCacheAdapter;
         $this->userSettingsCacheAdapter = $userSettingsCacheAdapter;
         $this->userService = $userService;
@@ -49,13 +44,6 @@ class ConfigurationService
     {
         if (!$this->clearCacheDataForAdapterAndKeyParts(
             $this->getStorageConfigurationCacheAdapter(), [StorageConfigurationCacheDataPreLoader::class]
-        ))
-        {
-            return false;
-        }
-
-        if (!$this->clearCacheDataForAdapterAndKeyParts(
-            $this->getConfigurationCacheAdapter(), [AggregatedCacheDataPreLoader::class]
         ))
         {
             return false;
@@ -154,11 +142,6 @@ class ConfigurationService
     public function findSettingContextsForCondition(?Condition $condition = null): array
     {
         return $this->getConfigurationRepository()->findSettingContextsForCondition($condition);
-    }
-
-    public function getConfigurationCacheAdapter(): AdapterInterface
-    {
-        return $this->configurationCacheAdapter;
     }
 
     protected function getConfigurationRepository(): ConfigurationRepository

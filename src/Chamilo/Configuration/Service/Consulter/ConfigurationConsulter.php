@@ -54,7 +54,7 @@ class ConfigurationConsulter
 
             return $values;
         }
-        catch (Exception $ex)
+        catch (Exception)
         {
             return null;
         }

@@ -11,21 +11,16 @@ use Chamilo\Configuration\Service\DataLoader\RegistrationCacheDataPreLoader;
 use Chamilo\Configuration\Service\FileConfigurationLocator;
 use Chamilo\Configuration\Service\RegistrationService;
 use Chamilo\Configuration\Storage\Repository\RegistrationRepository;
-use Chamilo\Libraries\Architecture\Application\Routing\UrlGenerator;
 use Chamilo\Libraries\Architecture\ClassnameUtilities;
-use Chamilo\Libraries\Architecture\ErrorHandler\ExceptionLogger\ExceptionLoggerFactory;
-use Chamilo\Libraries\Cache\SymfonyCacheAdapterFactory;
+use Chamilo\Libraries\Architecture\ErrorHandler\ExceptionLogger\FileExceptionLogger;
 use Chamilo\Libraries\DependencyInjection\ExtensionFinder\PackagesContainerExtensionFinder;
 use Chamilo\Libraries\DependencyInjection\Interfaces\ContainerExtensionFinderInterface;
 use Chamilo\Libraries\DependencyInjection\Interfaces\ICompilerPassExtension;
 use Chamilo\Libraries\DependencyInjection\Interfaces\IConfigurableExtension;
-use Chamilo\Libraries\File\ConfigurablePathBuilder;
 use Chamilo\Libraries\File\PackagesContentFinder\PackagesClassFinder;
 use Chamilo\Libraries\File\SystemPathBuilder;
 use Chamilo\Libraries\File\WebPathBuilder;
 use Chamilo\Libraries\Platform\ChamiloRequest;
-use Chamilo\Libraries\Platform\Session\PdoSessionHandlerFactory;
-use Chamilo\Libraries\Platform\Session\SessionFactory;
 use Chamilo\Libraries\Storage\Cache\ConditionPartCache;
 use Chamilo\Libraries\Storage\Cache\DataClassRepositoryCache;
 use Chamilo\Libraries\Storage\DataClass\DataClassFactory;
@@ -57,13 +52,10 @@ use Chamilo\Libraries\Storage\Service\StorageAliasGenerator;
 use Chamilo\Libraries\Utilities\StringUtilities;
 use Exception;
 use Symfony\Component\Cache\Adapter\ArrayAdapter;
-use Symfony\Component\Cache\Adapter\PhpFilesAdapter;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\DependencyInjection\Dumper\PhpDumper;
 use Symfony\Component\Filesystem\Filesystem;
-use Symfony\Component\HttpFoundation\Session\Session;
-use Symfony\Component\HttpFoundation\Session\Storage\NativeSessionStorage;
 
 /**
  * Builds the default dependency injection container for Chamilo
@@ -97,8 +89,6 @@ class DependencyInjectionContainerBuilder
 
     private ClassnameUtilities $classnameUtilities;
 
-    private ConfigurablePathBuilder $configurablePathBuilder;
-
     private ?ContainerExtensionFinderInterface $containerExtensionFinder;
 
     private ConfigurationConsulter $fileConfigurationConsulter;
@@ -118,7 +108,7 @@ class DependencyInjectionContainerBuilder
 
         if (is_null($cacheFile))
         {
-            $cacheFile = $this->getConfigurablePathBuilder()->getCachePath(__NAMESPACE__) . '/DependencyInjection.php';
+            $cacheFile = $this->getDefaultCacheFilePath();
         }
 
         $this->cacheFile = $cacheFile;
@@ -184,20 +174,6 @@ class DependencyInjectionContainerBuilder
         return $this->classnameUtilities;
     }
 
-    protected function getConfigurablePathBuilder(): ConfigurablePathBuilder
-    {
-        if (!isset($this->configurablePathBuilder))
-        {
-            $fileConfigurationConsulter = $this->getFileConfigurationConsulter();
-
-            $this->configurablePathBuilder = new ConfigurablePathBuilder(
-                $fileConfigurationConsulter->getSetting(['Chamilo\Configuration', 'storage'])
-            );
-        }
-
-        return $this->configurablePathBuilder;
-    }
-
     protected function getConnectionFactory(): ConnectionFactory
     {
         if (!isset($this->connectionFactory))
@@ -234,6 +210,23 @@ class DependencyInjectionContainerBuilder
     ): void
     {
         $this->containerExtensionFinder = $containerExtensionFinder;
+    }
+
+    protected function getDefaultCacheFilePath(): string
+    {
+        return realpath(
+                __DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . '..' .
+                DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR
+            ) . DIRECTORY_SEPARATOR . 'files' . DIRECTORY_SEPARATOR . 'symfony' . DIRECTORY_SEPARATOR .
+            'DependencyInjection.php';
+    }
+
+    protected function getDefaultLogsPath(): string
+    {
+        return realpath(
+                __DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . '..' .
+                DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR
+            ) . DIRECTORY_SEPARATOR . 'files' . DIRECTORY_SEPARATOR . 'logs' . DIRECTORY_SEPARATOR;
     }
 
     protected function getFileConfigurationConsulter(): ConfigurationConsulter
@@ -283,10 +276,6 @@ class DependencyInjectionContainerBuilder
      */
     protected function getPackageBundlesCacheService(): PackageBundlesCacheService
     {
-        $cacheAdapterFactory = new SymfonyCacheAdapterFactory($this->getConfigurablePathBuilder());
-
-        $cacheAdapter = $cacheAdapterFactory->createFilesystemAdapter('Chamilo\Configuration\Package\PackageBundles');
-
         $packageFactory = new PackageFactory($this->getSystemPathBuilder(), $this->getFilesystem());
 
         $packageBundlesGenerator = new PackageBundlesGenerator(
@@ -294,7 +283,7 @@ class DependencyInjectionContainerBuilder
             $this->getRegistrationConsulter()
         );
 
-        return new PackageBundlesCacheService($cacheAdapter, $packageBundlesGenerator);
+        return new PackageBundlesCacheService(new ArrayAdapter(), $packageBundlesGenerator);
     }
 
     /**
@@ -347,11 +336,7 @@ class DependencyInjectionContainerBuilder
 
             $storageAliasGenerator = new StorageAliasGenerator($this->getClassnameUtilities());
 
-            $conditionPartTranslatorService = new ConditionPartTranslatorService(
-                new ConditionPartCache(), $this->getFileConfigurationConsulter()->getSetting(
-                ['Chamilo\Configuration', 'debug', 'enable_query_cache']
-            )
-            );
+            $conditionPartTranslatorService = new ConditionPartTranslatorService(new ConditionPartCache(), false);
 
             $conditionPartTranslatorService->addConditionPartTranslator(
                 new CaseConditionVariableTranslator($conditionPartTranslatorService, $storageAliasGenerator)
@@ -418,31 +403,20 @@ class DependencyInjectionContainerBuilder
                 )
             );
 
-            $exceptionLoggerFactory = new ExceptionLoggerFactory(
-                $this->getFileConfigurationConsulter(), $this->getSession(),
-                new UrlGenerator($this->getRequest(), $this->getWebPathBuilder())
-            );
-
             $dataClassRepositoryCache = new DataClassRepositoryCache();
 
             $dataClassRepository = new DataClassRepository(
                 $dataClassRepositoryCache, new DataClassDatabase(
                 $connectionFactory->getConnection(), $storageAliasGenerator,
-                $exceptionLoggerFactory->createExceptionLogger(), $conditionPartTranslatorService,
+                new FileExceptionLogger($this->getDefaultLogsPath()), $conditionPartTranslatorService,
                 new QueryBuilderConfigurator($conditionPartTranslatorService, $storageAliasGenerator)
             ), new DataClassFactory()
             );
 
             $this->registrationConsulter = new RegistrationConsulter(
                 new RegistrationCacheDataPreLoader(
-                    new PhpFilesAdapter(
-                        md5('Chamilo\Configuration\Service\Registration'), 0,
-                        $this->getConfigurablePathBuilder()->getConfiguredCachePath()
-                    ), $this->getStringUtilities(), new RegistrationService(
-                        new RegistrationRepository($dataClassRepository), new PhpFilesAdapter(
-                            md5('Chamilo\Configuration\Service\Registration'), 0,
-                            $this->getConfigurablePathBuilder()->getConfiguredCachePath()
-                        )
+                    new ArrayAdapter(), $this->getStringUtilities(), new RegistrationService(
+                        new RegistrationRepository($dataClassRepository), new ArrayAdapter()
                     )
                 ), $this->getStringUtilities()
             );
@@ -459,21 +433,6 @@ class DependencyInjectionContainerBuilder
         }
 
         return $this->request;
-    }
-
-    /**
-     * @throws \Chamilo\Libraries\Storage\Architecture\Exceptions\ConnectionException
-     */
-    protected function getSession(): Session
-    {
-        $securityKey =
-            $this->getFileConfigurationConsulter()->getSetting(['Chamilo\Configuration', 'general', 'security_key']);
-
-        $pdoSessionHandlerFactory = new PdoSessionHandlerFactory($this->getConnectionFactory()->getConnection());
-        $nativeSessionStorage = new NativeSessionStorage([], $pdoSessionHandlerFactory->getPdoSessionHandler());
-        $sessionFactory = new SessionFactory($nativeSessionStorage, $securityKey);
-
-        return $sessionFactory->getSession();
     }
 
     protected function getStringUtilities(): StringUtilities

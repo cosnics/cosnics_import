@@ -72,6 +72,8 @@ class UserService
 
     private PropertyMapper $propertyMapper;
 
+    private string $securityKey;
+
     private UserRepository $userRepository;
 
     public function __construct(
@@ -79,7 +81,7 @@ class UserService
         Translator $translator, FilesystemAdapter $userSettingsCacheAdapter,
         ConfigurationConsulter $configurationConsulter, WebPathBuilder $webPathBuilder, MailerInterface $activeMailer,
         PasswordGeneratorInterface $passwordGenerator, AuthenticationValidator $authenticationValidator,
-        UrlGenerator $urlGenerator, EventDispatcherInterface $eventDispatcher
+        UrlGenerator $urlGenerator, EventDispatcherInterface $eventDispatcher, string $securityKey
     )
     {
         $this->userRepository = $userRepository;
@@ -94,6 +96,7 @@ class UserService
         $this->authenticationValidator = $authenticationValidator;
         $this->urlGenerator = $urlGenerator;
         $this->eventDispatcher = $eventDispatcher;
+        $this->securityKey = $securityKey;
     }
 
     public function approveUser(User $user): bool
@@ -351,10 +354,7 @@ class UserService
 
     public function determineUserKey(User $user): string
     {
-        $securityKey =
-            $this->getConfigurationConsulter()->getSetting(['Chamilo\Configuration', 'general', 'security_key']);
-
-        return $this->getHashingUtilities()->hashString($securityKey . $user->get_email());
+        return $this->getHashingUtilities()->hashString($this->getSecurityKey() . $user->get_email());
     }
 
     /**
@@ -627,6 +627,11 @@ class UserService
     public function getPropertyMapper(): PropertyMapper
     {
         return $this->propertyMapper;
+    }
+
+    public function getSecurityKey(): string
+    {
+        return $this->securityKey;
     }
 
     public function getTranslator(): Translator

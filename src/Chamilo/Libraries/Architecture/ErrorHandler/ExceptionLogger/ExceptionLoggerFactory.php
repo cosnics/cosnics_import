@@ -1,7 +1,6 @@
 <?php
 namespace Chamilo\Libraries\Architecture\ErrorHandler\ExceptionLogger;
 
-use Chamilo\Configuration\Service\Consulter\ConfigurationConsulter;
 use Chamilo\Libraries\Architecture\Application\Routing\UrlGenerator;
 use Exception;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
@@ -15,17 +14,17 @@ use Symfony\Component\HttpFoundation\Session\SessionInterface;
 class ExceptionLoggerFactory
 {
 
-    protected ConfigurationConsulter $configurationConsulter;
+    protected array $errorHandlingConfiguration;
 
     protected SessionInterface $session;
 
     protected UrlGenerator $urlGenerator;
 
     public function __construct(
-        ConfigurationConsulter $configurationConsulter, SessionInterface $session, UrlGenerator $urlGenerator
+        SessionInterface $session, UrlGenerator $urlGenerator, array $errorHandlingConfiguration
     )
     {
-        $this->configurationConsulter = $configurationConsulter;
+        $this->errorHandlingConfiguration = $errorHandlingConfiguration;
         $this->session = $session;
         $this->urlGenerator = $urlGenerator;
     }
@@ -35,8 +34,11 @@ class ExceptionLoggerFactory
      */
     protected function createDefaultExceptionLogger(): FileExceptionLogger
     {
+        $errorHandlingConfiguration = $this->getErrorHandlingConfiguration();
+
         $fileExceptionLoggerBuilder = new FileExceptionLoggerBuilder(
-            $this->getConfigurationConsulter(), $this->getSession(), $this->getUrlGenerator()
+            $this->getSession(), $this->getUrlGenerator(),
+            $errorHandlingConfiguration['instances']['Chamilo\Libraries\Architecture\ErrorHandler\ExceptionLogger\FileExceptionLoggerBuilder']
         );
 
         return $fileExceptionLoggerBuilder->createExceptionLogger();
@@ -49,17 +51,13 @@ class ExceptionLoggerFactory
      */
     public function createExceptionLogger(): ExceptionLoggerInterface
     {
-        $errorHandlingConfiguration = $this->configurationConsulter->getSetting(
-            ['Chamilo\Configuration', 'error_handling']
-        );
-
-        $exceptionLoggerConfiguration = $errorHandlingConfiguration['exception_logger'];
+        $exceptionLoggerConfiguration = $this->errorHandlingConfiguration['exception_logger'];
         if (count($exceptionLoggerConfiguration) == 0)
         {
             return $this->createDefaultExceptionLogger();
         }
 
-        return $this->createExceptionLoggerByConfiguration($errorHandlingConfiguration);
+        return $this->createExceptionLoggerByConfiguration($this->errorHandlingConfiguration);
     }
 
     /**
@@ -70,7 +68,8 @@ class ExceptionLoggerFactory
      * @return \Chamilo\Libraries\Architecture\ErrorHandler\ExceptionLogger\ExceptionLoggerInterface
      * @throws \Exception
      */
-    protected function createExceptionLoggerByConfiguration(array $errorHandlingConfiguration = [])
+    protected function createExceptionLoggerByConfiguration(array $errorHandlingConfiguration = []
+    ): ExceptionLoggerInterface
     {
         $exceptionLoggers = [];
 
@@ -99,7 +98,8 @@ class ExceptionLoggerFactory
                 }
 
                 $exceptionLoggerBuilder = new $exceptionLoggerBuilderClass(
-                    $this->getConfigurationConsulter(), $this->getSession(), $this->getUrlGenerator()
+                    $this->getSession(), $this->getUrlGenerator(),
+                    $errorHandlingConfiguration['instances'][$exceptionLoggerBuilderClass]
                 );
 
                 if (!$exceptionLoggerBuilder instanceof ExceptionLoggerBuilderInterface)
@@ -140,9 +140,9 @@ class ExceptionLoggerFactory
         return new ExceptionLoggerChain($exceptionLoggers);
     }
 
-    public function getConfigurationConsulter(): ConfigurationConsulter
+    public function getErrorHandlingConfiguration(): array
     {
-        return $this->configurationConsulter;
+        return $this->errorHandlingConfiguration;
     }
 
     public function getSession(): SessionInterface
