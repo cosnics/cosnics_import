@@ -10,7 +10,7 @@
             class="Chamilo\Configuration\Service\ConfigurationConsulter">
             <argument
                 type="service"
-                id="chamilo.configuration.service.configuration_cache_loader" />
+                id="chamilo.configuration.service.configuration_loader" />
         </service>
 
         <service id="Chamilo\Configuration\Service\ConfigurationConsulter"

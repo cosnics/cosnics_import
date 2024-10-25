@@ -1,37 +1,35 @@
 <?php
 namespace Chamilo\Configuration\Service;
 
+use Chamilo\Configuration\Interfaces\DataLoaderInterface;
+
 /**
  *
  * @package Chamilo\Configuration\Service
  * @author Hans De Bisschop <hans.de.bisschop@ehb.be>
  * @author Magali Gillard <magali.gillard@ehb.be>
  */
-class ConfigurationConsulter extends DataConsulter
+class ConfigurationConsulter
 {
+    protected ?array $settings = null;
 
-    /**
-     *
-     * @return string[]
-     */
-    public function getSettings()
+    public function __construct(protected DataLoaderInterface $cacheableAggregatedDataLoader)
     {
-        return $this->getData();
+
     }
 
-    /**
-     * Gets a parameter from the configuration.
-     *
-     * @param string[] $keys
-     * @throws \Exception
-     * @return string
-     */
-    /**
-     *
-     * @param string[] $keys
-     * @return string
-     */
-    public function getSetting($keys)
+    public function getSettings(): array
+    {
+        if(is_null($this->settings))
+        {
+            $this->settings = $this->cacheableAggregatedDataLoader->getData();
+            //dump($this->settings);
+        }
+
+        return $this->settings;
+    }
+
+    public function getSetting(array $keys): mixed
     {
         try
         {
@@ -58,18 +56,13 @@ class ConfigurationConsulter extends DataConsulter
 
             return $values;
         }
-        catch(\Exception $ex)
+        catch(\Exception)
         {
-            return null;
+            return '';
         }
     }
 
-    /**
-     *
-     * @param string[] $keys
-     * @param string $value
-     */
-    protected function setSetting($keys, $value)
+    /*protected function setSetting(array $keys, mixed $value): void
     {
         $variables = $keys;
         $values = $this->getSettings();
@@ -90,14 +83,9 @@ class ConfigurationConsulter extends DataConsulter
         }
 
         $values = $value;
-    }
+    }*/
 
-    /**
-     *
-     * @param string $context
-     * @return boolean
-     */
-    public function hasSettingsForContext($context)
+    public function hasSettingsForContext(string $context): bool
     {
         $settings = $this->getSettings();
         return isset($settings[$context]);
