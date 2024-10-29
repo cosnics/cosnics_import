@@ -316,7 +316,6 @@ class Configuration
     {
         RecordResultSetCache::truncates(array(Registration::class_name(), Setting::class_name()));
         DataClassResultSetCache::truncates(array(Registration::class_name(), Setting::class_name()));
-        self::getInstance()->getConfigurationConsulter()->clearData();
         self::getInstance()->getRegistrationConsulter()->clearData();
         self::getInstance()->getLanguageConsulter()->clearData();
     }
