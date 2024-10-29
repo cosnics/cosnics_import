@@ -61,7 +61,6 @@ class ConfigurationWriter
             );
         }
 
-        $this->reloadConfigurationCache();
     }
 
     /**
@@ -84,7 +83,6 @@ class ConfigurationWriter
             );
         }
 
-        $this->reloadConfigurationCache();
     }
 
     /**
@@ -92,8 +90,6 @@ class ConfigurationWriter
      */
     public function reloadConfigurationCache()
     {
-        $this->configurationConsulter->clearData();
-        $this->configurationConsulter->getData();
     }
 
 }
