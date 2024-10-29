@@ -39,9 +39,13 @@ abstract class DoctrineCacheService extends IdentifiableCacheService
      */
     protected function getCachePath()
     {
-        DependencyInjectionContainerBuilder::getInstance()->createContainer();
+        /*DependencyInjectionContainerBuilder::getInstance()->createContainer();
         $container = DependencyInjectionContainerBuilder::getInstance()->createContainer();
-        $configurationConsulter = $container->get('chamilo.configuration.service.file_configuration_consulter');
+        $configurationConsulter = $container->get('chamilo.configuration.service.file_configuration_consulter');*/
+
+        $configurationConsulter = new ConfigurationConsulter(
+            new FileConfigurationLoader(
+                new FileConfigurationLocator(new PathBuilder(new ClassnameUtilities(new StringUtilities())))));
 
         $configurablePathBuilder = new ConfigurablePathBuilder(
             $configurationConsulter->getSetting(array('Chamilo\Configuration', 'storage')));
