@@ -43,13 +43,13 @@ class NotificationManager
      * @param NotificationTranslator $notificationTranslator
      */
     public function __construct(
-        NotificationRepository $notificationRepository, NotificationContextManager $contextManager,
-        NotificationTranslator $notificationTranslator
+     /*   NotificationRepository $notificationRepository, NotificationContextManager $contextManager,
+        NotificationTranslator $notificationTranslator*/
     )
     {
-        $this->notificationRepository = $notificationRepository;
-        $this->notificationTranslator = $notificationTranslator;
-        $this->contextManager = $contextManager;
+//        $this->notificationRepository = $notificationRepository;
+//        $this->notificationTranslator = $notificationTranslator;
+//        $this->contextManager = $contextManager;
     }
 
     /**

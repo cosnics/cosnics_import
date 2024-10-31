@@ -7,6 +7,7 @@ use Chamilo\Core\Repository\Workspace\Repository\ContentObjectRepository;
 use Chamilo\Libraries\File\ConfigurablePathBuilder;
 use Chamilo\Libraries\File\FilesystemTools;
 use Chamilo\Libraries\Format\Theme\ThemePathBuilder;
+use Symfony\Component\Filesystem\Filesystem;
 use Twig\Environment;
 
 /**
@@ -20,7 +21,7 @@ class ReportExporter
 
     protected ContentObjectRepository $contentObjectRepository;
 
-    protected \Symfony\Component\Filesystem\Filesystem $filesystem;
+    protected Filesystem $filesystem;
 
     protected FilesystemTools $filesystemTools;
 
@@ -32,14 +33,14 @@ class ReportExporter
 
     public function __construct(
         ReportRenderer $reportRenderer, ContentObjectRepository $contentObjectRepository,
-        ConfigurablePathBuilder $configurablePathBuilder, ThemePathBuilder $themePathBuilder, Environment $twigRenderer,
-        \Symfony\Component\Filesystem\Filesystem $filesystem, FilesystemTools $filesystemTools
+        ConfigurablePathBuilder $configurablePathBuilder, ThemePathBuilder $themeWebPathBuilder,
+        Environment $twigRenderer, Filesystem $filesystem, FilesystemTools $filesystemTools
     )
     {
         $this->reportRenderer = $reportRenderer;
         $this->contentObjectRepository = $contentObjectRepository;
         $this->configurablePathBuilder = $configurablePathBuilder;
-        $this->themeWebPathBuilder = $themePathBuilder;
+        $this->themeWebPathBuilder = $themeWebPathBuilder;
         $this->twigRenderer = $twigRenderer;
         $this->filesystem = $filesystem;
         $this->filesystemTools = $filesystemTools;

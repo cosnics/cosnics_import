@@ -168,15 +168,19 @@ class PackageBundlesGenerator extends BasicBundlesGenerator
      */
     protected function isRelevantPackage(string $packageNamespace, int $mode): bool
     {
+        if ($mode == PackageList::MODE_ALL)
+        {
+            return true;
+        }
+
         $registrationConsulter = $this->getRegistrationConsulter();
 
-        $isAll = $mode == PackageList::MODE_ALL;
         $isInstalled =
             $mode == PackageList::MODE_INSTALLED && $registrationConsulter->isContextRegistered($packageNamespace);
         $isAvailable =
             $mode == PackageList::MODE_AVAILABLE && !$registrationConsulter->isContextRegistered($packageNamespace);
 
-        return $isAll || $isInstalled || $isAvailable;
+        return $isInstalled || $isAvailable;
     }
 
     /**

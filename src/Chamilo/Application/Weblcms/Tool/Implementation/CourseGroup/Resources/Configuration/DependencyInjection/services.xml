@@ -15,6 +15,7 @@
 
         <service id="Chamilo\Application\Weblcms\Tool\Implementation\CourseGroup\UserExporter\CourseGroupUserExportExtender"/>
 
+        <!--
         <service id="Chamilo\Application\Weblcms\Tool\Implementation\CourseGroup\UserExporter">
             <argument key="$userExportRenderer"
                       type="service"
@@ -24,6 +25,7 @@
                           id="Chamilo\Application\Weblcms\Tool\Implementation\CourseGroup\UserExporter\CourseGroupUserExportExtender"></argument>
             </argument>
         </service>
+        -->
 
     </services>
 </container>

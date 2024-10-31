@@ -22,7 +22,7 @@ class DependencyInjectionExtension extends AbstractDependencyInjectionExtension 
 
     public function getConfigurationFiles(): array
     {
-        return ['Chamilo\Application\Weblcms\Tool\Implementation\CourseGroup\Extension\Office365' => 'package.xml'];
+        return ['Chamilo\Application\Weblcms\Tool\Implementation\CourseGroup\Extension\Office365' => ['package.xml']];
     }
 
 }
