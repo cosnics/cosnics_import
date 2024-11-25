@@ -377,6 +377,13 @@ abstract class AssignmentRepository
 
         $this->filterParametersTranslator->translateFilterParameters($filterParameters, $searchProperties, $parameters, $condition);
 
+        $orderBy = $parameters->getOrderBy();
+        if(!empty($orderBy))
+        {
+            $orderBy[] = new OrderBy($baseVariable, SORT_ASC);
+            $parameters->setOrderBy($orderBy);
+        }
+
         return $this->dataClassRepository->records($baseClass, $parameters);
     }
 
