@@ -60,6 +60,7 @@ class EventParser
         );
 
         $events = $parser->getEvents();
+
         foreach ($events as $parsedEvent)
         {
             $parameters = [];
@@ -95,32 +96,19 @@ class EventParser
     }
 
     /**
-     * @return \Chamilo\Application\Weblcms\Storage\DataClass\ContentObjectPublication
-     */
-    public function getPublication()
-    {
-        return $this->publication;
-    }
-
-    /**
-     * @return int
-     */
-    public function getToDate()
-    {
-        return $this->toDate;
-    }
-
-    public function getUrlGenerator(): UrlGenerator
-    {
-        return DependencyInjectionContainerBuilder::getInstance()->createContainer()->get(UrlGenerator::class);
-    }
-
-    /**
      * @param int $fromDate
      */
     public function setFromDate($fromDate)
     {
         $this->fromDate = $fromDate;
+    }
+
+    /**
+     * @return \Chamilo\Application\Weblcms\Storage\DataClass\ContentObjectPublication
+     */
+    public function getPublication()
+    {
+        return $this->publication;
     }
 
     /**
@@ -132,10 +120,23 @@ class EventParser
     }
 
     /**
+     * @return int
+     */
+    public function getToDate()
+    {
+        return $this->toDate;
+    }
+
+    /**
      * @param int $toDate
      */
     public function setToDate($toDate)
     {
         $this->toDate = $toDate;
+    }
+
+    public function getUrlGenerator(): UrlGenerator
+    {
+        return DependencyInjectionContainerBuilder::getInstance()->createContainer()->get(UrlGenerator::class);
     }
 }

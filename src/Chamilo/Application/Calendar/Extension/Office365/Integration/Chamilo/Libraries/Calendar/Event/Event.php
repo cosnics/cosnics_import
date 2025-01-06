@@ -2,7 +2,6 @@
 namespace Chamilo\Application\Calendar\Extension\Office365\Integration\Chamilo\Libraries\Calendar\Event;
 
 /**
- *
  * @package Chamilo\Application\Calendar\Extension\Office365\Integration\Chamilo\Libraries\Calendar\Event
  * @author Hans De Bisschop <hans.de.bisschop@ehb.be>
  * @author Magali Gillard <magali.gillard@ehb.be>
@@ -10,28 +9,17 @@ namespace Chamilo\Application\Calendar\Extension\Office365\Integration\Chamilo\L
  */
 class Event extends \Chamilo\Libraries\Calendar\Event\Event
 {
+    private \Microsoft\Graph\Model\Event $sourceEvent;
 
-    /**
-     *
-     * @var \Microsoft\Graph\Model\Event
-     */
-    private $office365CalendarEvent;
-
-    /**
-     *
-     * @return \Microsoft\Graph\Model\Event
-     */
-    public function getOffice365CalendarEvent()
+    public function getSourceEvent(): \Microsoft\Graph\Model\Event
     {
-        return $this->office365CalendarEvent;
+        return $this->sourceEvent;
     }
 
-    /**
-     *
-     * @param \Microsoft\Graph\Model\Event $office365CalendarEvent
-     */
-    public function setOffice365CalendarEvent(\Microsoft\Graph\Model\Event $office365CalendarEvent)
+    public function setSourceEvent(\Microsoft\Graph\Model\Event $office365CalendarEvent): static
     {
-        $this->office365CalendarEvent = $office365CalendarEvent;
+        $this->sourceEvent = $office365CalendarEvent;
+
+        return $this;
     }
 }

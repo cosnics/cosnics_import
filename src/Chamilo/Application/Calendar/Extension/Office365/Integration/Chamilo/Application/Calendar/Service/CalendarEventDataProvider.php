@@ -44,7 +44,7 @@ class CalendarEventDataProvider extends ExternalCalendar
             $availableCalendar->setIdentifier($calendar->getId());
             $availableCalendar->setName($calendar->getName());
         }
-        catch (Exception $exception)
+        catch (Exception)
         {
             $availableCalendar->setIdentifier($calendarIdentifier);
             $availableCalendar->setName('NOT FOUND');
@@ -143,7 +143,7 @@ class CalendarEventDataProvider extends ExternalCalendar
                         $availableCalendars[] = $availableCalendar;
                     }
                 }
-                catch (Exception $exception)
+                catch (Exception)
                 {
                     $availableCalendars = [];
                 }
@@ -154,7 +154,7 @@ class CalendarEventDataProvider extends ExternalCalendar
 
             return $cacheItem->get();
         }
-        catch (InvalidArgumentException $e)
+        catch (InvalidArgumentException)
         {
             return [];
         }
@@ -170,7 +170,6 @@ class CalendarEventDataProvider extends ExternalCalendar
         try
         {
             $calendarIdentifiers = $this->getCalendarIdentifiers($calendarRendererProvider);
-
             $identifier = [
                 __METHOD__,
                 $calendarRendererProvider->getDataUser()->getId(),
@@ -201,7 +200,7 @@ class CalendarEventDataProvider extends ExternalCalendar
 
             return $cacheItem->get();
         }
-        catch (InvalidArgumentException|AzureUserNotExistsException $e)
+        catch (InvalidArgumentException|AzureUserNotExistsException)
         {
             return [];
         }
@@ -210,17 +209,5 @@ class CalendarEventDataProvider extends ExternalCalendar
     protected function getFilesystemAdapter(): FilesystemAdapter
     {
         return $this->getService('Chamilo\Application\Calendar\Extension\Office365\CacheAdapter');
-    }
-
-    /**
-     * @return int
-     */
-    protected function getRefreshExternalInSeconds()
-    {
-        $refreshExternal = $this->getConfigurationConsulter()->getSetting(
-            ['Chamilo\Libraries\Calendar', 'refresh_external']
-        );
-
-        return $refreshExternal * 60;
     }
 }

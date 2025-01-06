@@ -3,6 +3,7 @@ namespace Chamilo\Libraries\Calendar\Service\View;
 
 use Chamilo\Libraries\Calendar\Architecture\Interfaces\CalendarRendererProviderInterface;
 use Chamilo\Libraries\Calendar\Event\Event;
+use Chamilo\Libraries\Calendar\Event\EventAttendee;
 use Chamilo\Libraries\Calendar\Service\Recurrence\VObjectRecurrenceRulesFormatter;
 use DateTime;
 use DateTimeZone;
@@ -92,6 +93,37 @@ class ICalCalendarRenderer extends CalendarRenderer
         {
             $event->add('RRULE', $vObjectRecurrenceRulesFormatter->format($providedEvent->getRecurrenceRules()));
         }
+
+        if ($providedEvent->getOrganizer() instanceof EventAttendee)
+        {
+            $organizerValue = 'MAILTO:' . $providedEvent->getOrganizer()->getEmail();
+
+            if ($providedEvent->getOrganizer()->getName())
+            {
+                $organizerValue = 'CN=' . $providedEvent->getOrganizer()->getName() . ':' . $organizerValue;
+            }
+
+            $event->add('ORGANIZER', $organizerValue);
+        }
+
+        foreach ($providedEvent->getAttendees() as $attendee)
+        {
+            $attendeeValues = [];
+
+            if ($attendee->getICalType())
+            {
+                $attendeeValues['ROLE'] = $attendee->getICalType();
+            }
+
+            if ($attendee->getICalResponseStatus())
+            {
+                $attendeeValues['PARTSTAT'] = $attendee->getICalResponseStatus();
+            }
+
+            $attendeeValues['CN'] = $attendee->getName();
+
+            $event->add('ATTENDEE', 'MAILTO:' . $attendee->getEmail(), $attendeeValues);
+        }
     }
 
     /**
@@ -99,7 +131,9 @@ class ICalCalendarRenderer extends CalendarRenderer
      */
     private function addEvents(CalendarRendererProviderInterface $dataProvider)
     {
-        $providedEvents = $dataProvider->getEvents(strtotime('first day of 2 months ago midnight', ), strtotime('last day of +6 months midnight'));
+        $providedEvents = $dataProvider->getEvents(
+            strtotime('first day of 2 months ago midnight'), strtotime('last day of +6 months midnight')
+        );
 
         foreach ($providedEvents as $providedEvent)
         {
